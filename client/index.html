@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TIN TỨC 2026 - Cổng Bản Tin Tổng Hợp 48 Giờ & Điểm Tin Audio Thông Minh</title>
+  <meta name="description" content="Hệ thống quét tin tức trong nước trong vòng 48h từ VnExpress, VTC News, Giá vàng, Fanpage Tân Phú & TP.HCM. Tự động nhận diện diễn biến tiếp theo và đọc kịch bản Audio liền mạch.">
+  <meta name="keywords" content="tin tức 48h, audio briefing, podcast tin tức, vnexpress, gia vang sjc, tin tan phu, tphcm">
+  <meta name="author" content="Antigravity AI">
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- CSS Chính -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Hiệu ứng quầng sáng nền Gradient -->
+  <div class="bg-glow-orb orb-1"></div>
+  <div class="bg-glow-orb orb-2"></div>
+
+  <!-- Thanh Điều Hướng Header -->
+  <header class="header-container">
+    <nav class="nav-wrapper" aria-label="Main Navigation">
+      <a href="/" class="logo-brand" id="brand-logo-link">
+        <div class="logo-icon">🎙️</div>
+        <div class="logo-text">
+          <h1>TIN TỨC 2026</h1>
+          <span>Bản tin Tổng Hợp & Audio 48H</span>
+        </div>
+      </a>
+
+      <div class="header-actions">
+        <div class="user-badge" id="current-user-badge">
+          <span>👤 ID:</span>
+          <strong id="user-id-display">user_default</strong>
+        </div>
+
+        <button class="btn btn-outline" id="btn-view-history" aria-label="Xem lịch sử đã nghe">
+          📊 Lịch sử nghe
+        </button>
+
+        <button class="btn btn-primary" id="btn-crawl-news" aria-label="Quét tin tức 48h mới nhất">
+          ⚡ Quét tin tức 48h
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Khu Vực Nội Dung Chính -->
+  <main class="main-layout">
+    <!-- Studio Bản Tin Audio Podcast 48 Giờ -->
+    <section class="hero-podcast-card" aria-labelledby="podcast-heading">
+      <div class="player-header">
+        <div class="player-title-area">
+          <h2 id="podcast-heading">
+            📻 Studio Bản Tin Audio 48 Giờ
+            <span class="badge-48h">48 Giờ Qua</span>
+          </h2>
+          <div class="player-meta">
+            <span id="briefing-news-count">0 tin tức</span>
+            <span id="briefing-time-text">Đang cập nhật...</span>
+            <span id="briefing-evolution-count" class="badge-evolution-tag" style="display: none;">0 Diễn biến mới</span>
+          </div>
+        </div>
+
+        <div class="current-section-speaker" id="current-speaker-status">
+          Trình phát đang sẵn sàng
+        </div>
+      </div>
+
+      <!-- Bảng Điều Khiển Trình Phát Audio -->
+      <div class="audio-controls-panel">
+        <div class="playback-buttons">
+          <div class="controls-group-left">
+            <button class="btn-play-large" id="btn-play-briefing" title="Phát toàn bộ bản tin" aria-label="Phát hoặc tạm dừng bản tin">
+              ▶️
+            </button>
+            <button class="btn-circle-control" id="btn-rewind-audio" title="Tua lùi lại 3 câu" aria-label="Tua lùi 3 câu">
+              ⏮️
+            </button>
+            <button class="btn-circle-control" id="btn-forward-audio" title="Tua tới 3 câu" aria-label="Tua tới 3 câu">
+              ⏭️
+            </button>
+            <button class="btn-circle-control" id="btn-stop-audio" title="Dừng hoàn toàn" aria-label="Dừng bản tin">
+              ⏹️
+            </button>
+
+            <!-- Sóng âm Visualizer -->
+            <div class="waveform-container" id="audio-waveform" aria-hidden="true">
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+            </div>
+          </div>
+
+          <div class="controls-group-right">
+            <label for="audio-speed-select" style="font-size: 0.85rem; color: var(--text-muted);">Tốc độ:</label>
+            <select id="audio-speed-select" class="speed-select" aria-label="Chọn tốc độ đọc">
+              <option value="0.8">0.8x (Chậm)</option>
+              <option value="1.0" selected>1.0x (Chuẩn)</option>
+              <option value="1.2">1.2x (Nhanh vừa)</option>
+              <option value="1.5">1.5x (Nhanh)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Thanh Tiến Trình Bản Tin -->
+        <div class="audio-progress-bar-container">
+          <div class="progress-track" id="audio-progress-track">
+            <div class="progress-fill" id="audio-progress-fill"></div>
+          </div>
+          <div class="progress-time-display">
+            <span>Tiến độ đọc bản tin</span>
+            <span id="audio-time-percent">0%</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Thanh Hành Động Thử Nghiệm Tình Huống Diễn Biến Sự Kiện -->
+    <div class="quick-action-bar">
+      <div class="quick-action-info">
+        <span class="badge-info">💡 THỬ NGHIỆM AI</span>
+        <span style="font-size: 0.9rem; color: var(--text-main);">
+          Mô phỏng trường hợp: <em>Vụ cháy xe máy tại TP.HCM</em> ➡️ <em>3 tiếng sau nạn nhân không qua khỏi</em>.
+        </span>
+      </div>
+      <button class="btn btn-emerald" id="btn-mock-scenario" aria-label="Mô phỏng vụ cháy xe máy để kiểm tra nhận diện diễn biến">
+        🧪 Kích hoạt Thử nghiệm Diễn biến thực tế
+      </button>
+    </div>
+
+    <!-- Bộ Lọc Chuyên Mục Tin Tức -->
+    <section aria-label="Lọc theo chuyên mục">
+      <div class="category-tabs" id="category-tabs-container">
+        <button class="tab-btn active" data-category="all" id="tab-all">
+          ✨ Tất cả tin 48h
+        </button>
+        <button class="tab-btn" data-category="evolution" id="tab-evolution">
+          ⚡ Diễn biến tiếp theo
+        </button>
+        <button class="tab-btn" data-category="thoi_su" id="tab-thoisu">
+          🏛️ Thời sự - Chính trị
+        </button>
+        <button class="tab-btn" data-category="cong_nghe" id="tab-congnghe">
+          💻 Khoa học - Công nghệ
+        </button>
+        <button class="tab-btn" data-category="gia_vang_kinh_te" id="tab-giavang">
+          💰 Kinh tế & Giá vàng
+        </button>
+        <button class="tab-btn" data-category="doi_song_local" id="tab-doisong">
+          🏙️ Đời sống & Tân Phú, TP.HCM
+        </button>
+        <button class="tab-btn" data-category="the_gioi" id="tab-thegioi">
+          🌍 Thế giới
+        </button>
+      </div>
+
+      <!-- Danh Sách Lưới Tin Tức -->
+      <div class="news-grid" id="news-cards-container">
+        <!-- Render tự động bởi app.js -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Quản Lý Lịch Sử Nghe & Cache User -->
+  <div class="modal-backdrop" id="history-modal" aria-hidden="true" role="dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem; font-weight: 700;">📊 Lịch Sử Nghe & Cột Mốc Lưu Trữ</h3>
+        <button class="modal-close-btn" id="btn-close-modal" aria-label="Đóng cửa sổ">✕</button>
+      </div>
+      <div style="margin-bottom: 1.25rem;">
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">
+          Tổng số tin đã nghe và lưu mốc: <strong id="modal-read-count" style="color: #60a5fa;">0 bài viết</strong>
+        </p>
+        <p style="font-size: 0.85rem; color: var(--text-subtle);">
+          Khi bạn nghe xong bản tin, hệ thống tự động lưu mốc để không lặp lại các tin cũ trừ khi có diễn biến mới phát sinh.
+        </p>
+      </div>
+
+      <div id="modal-history-list" style="margin-bottom: 1.5rem; max-height: 250px; overflow-y: auto;">
+        <!-- Danh sách các đợt phát đã nghe -->
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+        <button class="btn btn-outline" id="btn-reset-history-confirm" style="color: #f87171; border-color: rgba(239, 68, 68, 0.3);">
+          🗑️ Đặt lại lịch sử nghe
+        </button>
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Dữ liệu lưu tự động theo User</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hộp Chứa Toast Thông Báo -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Các Script JS -->
+  <script src="js/history.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

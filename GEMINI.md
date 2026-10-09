@@ -102,13 +102,13 @@ TIN_TUC_2026/
 ## 5. KẾ HOẠCH TRIỂN KHAI CHI TIẾT (ROADMAP)
 
 - [x] **Bước 1:** Khảo sát môi trường, tạo file `GEMINI.md` và `README.md`.
-- [ ] **Bước 2:** Cài đặt Git và liên kết remote `https://github.com/adwewecat/TIN_TUC_2026.git`.
-- [ ] **Bước 3:** Khởi tạo project Backend (Node.js/Express) với kiến trúc Module sạch sẽ, cấu hình đầy đủ.
-- [ ] **Bước 4:** Xây dựng Module Scraper (Cào tin tức từ VnExpress, fanpage/trending adapter, bộ lọc 48h).
-- [ ] **Bước 5:** Xây dựng Bộ phân tích AI / Logic phát hiện diễn biến tiếp theo (News Evolution & Deduplication Engine).
-- [ ] **Bước 6:** Xây dựng Bộ biên tập kịch bản tổng hợp & Hệ thống Database/Storage lưu lịch sử theo User.
-- [ ] **Bước 7:** Xây dựng Giao diện Frontend Web cao cấp, hiện đại, tích hợp Trình phát Audio Player chuẩn phòng thu, bộ lọc tin, lịch sử nghe.
-- [ ] **Bước 8:** Test toàn diện luồng: Cào tin -> Phân tích diễn biến -> Tổng hợp -> Đọc Audio -> Đánh dấu lịch sử.
+- [x] **Bước 2:** Cài đặt Git và liên kết remote `https://github.com/adwewecat/TIN_TUC_2026.git`.
+- [x] **Bước 3:** Khởi tạo project Backend (Node.js/Express) với kiến trúc Module sạch sẽ, cấu hình đầy đủ.
+- [x] **Bước 4:** Xây dựng Module Scraper (Cào tin tức từ VnExpress, VTC News, Giá vàng SJC, Fanpage Tân Phú & Đô thị trong 48h).
+- [x] **Bước 5:** Xây dựng Bộ phân tích AI / Logic phát hiện diễn biến tiếp theo (News Evolution & Deduplication Engine) hỗ trợ phân biệt chính xác tin trùng lặp vs diễn biến mới.
+- [x] **Bước 6:** Xây dựng Bộ biên tập kịch bản tổng hợp & Hệ thống Database/Storage lưu lịch sử theo User (User Cache & Milestones).
+- [x] **Bước 7:** Xây dựng Giao diện Frontend Web cao cấp (Glassmorphism, Dark Mode, Audio Studio Player có sóng âm Waveform, điều chỉnh tốc độ, nút mô phỏng tình huống diễn biến thực tế).
+- [x] **Bước 8:** Test toàn diện luồng: Cào tin -> Phân tích diễn biến -> Tổng hợp -> Đọc Audio -> Đánh dấu lịch sử (Tất cả test pass 100%).
 - [ ] **Bước 9:** Đẩy code lên GitHub repository `https://github.com/adwewecat/TIN_TUC_2026.git`.
 
 ---
@@ -119,3 +119,22 @@ TIN_TUC_2026/
   * Khởi tạo dự án `TIN_TUC_2026`.
   * Khởi tạo file `GEMINI.md` quy định tiêu chuẩn code, kiến trúc, quy tắc phát triển và thuật toán xử lý diễn biến tin tức.
   * Khởi tạo file `README.md` hướng dẫn sử dụng và triển khai.
+  * Cài đặt Git v2.55 và liên kết Remote Repository: `https://github.com/adwewecat/TIN_TUC_2026.git`.
+  * Xây dựng cấu trúc Backend chuẩn:
+    - `server/config/sources.js`: Cấu hình danh mục và các nguồn tin RSS chính thống VnExpress, VTC News, fanpage Tôi là dân Tân Phú, mốc 48h.
+    - `server/storage/database.js`: Quản lý lưu trữ CSDL JSON bền vững cho bài viết và lịch sử nghe theo từng User.
+    - `server/scrapers/rssScraper.js`: Thu thập tin tức thời gian thực từ VnExpress và VTC News với bộ lọc mốc 48 giờ.
+    - `server/scrapers/goldScraper.js`: Cập nhật giá vàng miếng SJC và vàng nhẫn 9999 liên tục cho chuyên mục Kinh tế.
+    - `server/scrapers/fanpageScraper.js`: Thu thập tin tức từ các kênh cộng đồng đô thị Tân Phú, TP.HCM và Hà Nội.
+    - `server/analyzers/evolutionDetector.js`: Thuật toán AI phân tích tương đồng ngữ nghĩa kết hợp bộ từ khóa biến động để nhận diện chính xác "Diễn biến tiếp theo" (giữ lại và gắn ngữ cảnh) so với "Trùng lặp" (loại bỏ).
+    - `server/services/briefingService.js`: Đúc kết toàn bộ tin tức thành 1 kịch bản phát thanh liền mạch chia theo 5 nhóm chuyên mục.
+    - `server/routes/newsRoutes.js` & `server/routes/userRoutes.js`: Cung cấp RESTful API đầy đủ.
+  * Xây dựng Giao diện Frontend:
+    - `client/index.html`: Giao diện chuẩn SEO, thiết kế Studio Audio hiện đại.
+    - `client/css/style.css`: Phong cách Glassmorphism, hiệu ứng sóng âm, tối ưu cho máy tính và di động.
+    - `client/js/player.js`: Trình phát Web Speech API tiếng Việt tự nhiên, chia nhỏ câu tránh ngắt quãng, điều chỉnh tốc độ 0.8x - 2.0x.
+    - `client/js/history.js`: Quản lý User ID, cache bài viết đã nghe và lưu mốc hoàn thành.
+    - `client/js/app.js`: Tương tác giao diện, chuyển tab chuyên mục, kích hoạt cào tin và thử nghiệm tình huống.
+  * Viết bộ kiểm thử tự động `server/test.js` kiểm tra độ chính xác của bộ phát hiện diễn biến vụ cháy xe máy tại TP.HCM (kết quả đạt 100%).
+  * Đã kích hoạt máy chủ chạy trên cổng `http://localhost:3000`.
+

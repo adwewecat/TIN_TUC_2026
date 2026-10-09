@@ -1,0 +1,31 @@
+{
+  "name": "tin-tuc-2026",
+  "version": "1.0.0",
+  "description": "Cổng bản tin thông minh 48h tự động thu thập tin tức, phát hiện diễn biến mới và phát Audio tổng hợp",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node server/test.js"
+  },
+  "keywords": [
+    "news",
+    "crawler",
+    "vietnam",
+    "audio-briefing",
+    "vnexpress",
+    "ai-news",
+    "text-to-speech"
+  ],
+  "author": "Antigravity AI & Dev",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "cheerio": "^1.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "rss-parser": "^3.13.0"
+  }
+}
