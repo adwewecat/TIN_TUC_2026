@@ -1,10 +1,9 @@
 @echo off
 chcp 65001 >nul
-title KIỂM THỬ TỰ ĐỘNG - TIN TỨC 2026
-color 0B
+title KIEM THU TU DONG - TIN TUC 2026
 
 echo ========================================================
-echo     🧪 CHẠY BỘ KIỂM THỬ TỰ ĐỘNG (DIỄN BIẾN MỚI ^& AUDIO)
+echo     CHAY BO KIEM THU TU DONG (DIEN BIEN MOI VA AUDIO)
 echo ========================================================
 echo.
 
@@ -14,5 +13,5 @@ node server/test.js
 
 echo.
 echo ========================================================
-echo Đã hoàn tất kiểm thử. Nhấn phím bất kỳ để đóng cửa sổ...
+echo Da hoan tat kiem thu. Nhan phim bat ky de dong cua so...
 pause >nul
