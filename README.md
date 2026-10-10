@@ -68,7 +68,11 @@ TIN_TUC_2026/
 * Node.js v18 trở lên.
 * Trình duyệt hiện đại (Chrome, Edge, Firefox, Safari).
 
-### Các bước cài đặt:
+### Cách 1: Khởi động nhanh 1-Click trên Windows (Tiện nhất)
+* Nhấp đúp chuột (Double click) vào file **`CHAY_WEB.bat`** trong thư mục dự án.
+* Hệ thống sẽ tự động kiểm tra thư viện, mở ngay trình duyệt tại **`http://localhost:3000`** và bật máy chủ.
+
+### Cách 2: Khởi động qua dòng lệnh (CLI):
 ```bash
 # 1. Di chuyển vào thư mục dự án
 cd e:/LAPTRINH/tintuc_2
@@ -76,15 +80,13 @@ cd e:/LAPTRINH/tintuc_2
 # 2. Cài đặt các thư viện cần thiết
 npm install
 
-# 3. Chạy server ở môi trường phát triển
-npm run dev
-
-# Hoặc khởi động server trực tiếp
+# 3. Khởi động server
 npm start
 ```
 
 Sau khi khởi động, truy cập trình duyệt tại địa chỉ:
 👉 **`http://localhost:3000`**
+
 
 ---
 

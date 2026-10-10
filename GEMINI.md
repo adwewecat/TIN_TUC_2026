@@ -139,4 +139,7 @@ TIN_TUC_2026/
   * Đã kích hoạt máy chủ chạy trên cổng `http://localhost:3000`.
   * Đồng bộ nhánh với GitHub: Đổi tên nhánh sang `main`, rebase thành công với commit ban đầu trên GitHub (`origin/main`), giải quyết xung đột `README.md` giữ toàn bộ mã nguồn chuẩn.
   * Đã xác thực quyền và đẩy toàn bộ mã nguồn sạch lên nhánh `origin/main` thành công.
+  * Bổ sung script Windows tiện ích:
+    - `CHAY_WEB.bat`: Double-click là tự động kiểm tra môi trường, mở trình duyệt `http://localhost:3000` và khởi chạy server.
+    - `TEST_LOGIC.bat`: Double-click là chạy bộ test tự động và hiển thị kết quả trực tiếp.
 
