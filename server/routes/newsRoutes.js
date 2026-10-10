@@ -4,6 +4,7 @@
  */
 
 import express from 'express';
+import axios from 'axios';
 import { fetchAllRssNews } from '../scrapers/rssScraper.js';
 import { fetchLiveGoldPriceNews } from '../scrapers/goldScraper.js';
 import { fetchSocialAndLocalNews } from '../scrapers/fanpageScraper.js';
@@ -171,6 +172,44 @@ router.post('/mock-scenario', (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/news/tts
+ * Phát âm thanh tiếng Việt tự nhiên chuẩn xác 100%
+ * Hoạt động mượt mà trên mọi máy tính và thiết bị di động mà không cần cài thêm gói ngôn ngữ Windows
+ */
+router.get('/tts', async (req, res) => {
+  try {
+    const text = req.query.text;
+    if (!text || !text.trim()) {
+      return res.status(400).send('Thiếu nội dung văn bản');
+    }
+
+    const cleanText = text.trim();
+    // Giới hạn độ dài để đảm bảo stream ổn định
+    const queryText = cleanText.length > 200 ? cleanText.substring(0, 197) + '...' : cleanText;
+    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=${encodeURIComponent(queryText)}`;
+
+    const response = await axios.get(ttsUrl, {
+      responseType: 'arraybuffer',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+      },
+      timeout: 10000
+    });
+
+    res.set({
+      'Content-Type': 'audio/mpeg',
+      'Content-Length': response.data.length,
+      'Cache-Control': 'public, max-age=86400'
+    });
+
+    res.send(Buffer.from(response.data));
+  } catch (err) {
+    console.error('[TTS Stream Error]:', err.message);
+    res.status(500).send('Lỗi phát âm thanh tiếng Việt');
   }
 });
 

@@ -142,4 +142,7 @@ TIN_TUC_2026/
   * Bổ sung script Windows tiện ích:
     - `CHAY_WEB.bat`: Double-click là tự động kiểm tra môi trường, mở trình duyệt `http://localhost:3000` và khởi chạy server.
     - `TEST_LOGIC.bat`: Double-click là chạy bộ test tự động và hiển thị kết quả trực tiếp.
+  * Nâng cấp bộ đọc Audio Tiếng Việt Chuẩn 100% (Native Vietnamese Audio Engine):
+    - Tích hợp endpoint `/api/news/tts` phát âm thanh tiếng Việt tự nhiên, êm tai.
+    - Thay thế Web Speech API nội bộ Windows (vốn bị lỗi đọc giọng tiếng Anh trên các máy chưa cài gói ngôn ngữ tiếng Việt) bằng pipeline HTML5 Audio tải trước và phát liền mạch.
 

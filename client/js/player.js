@@ -1,119 +1,162 @@
 /**
  * @file player.js
- * @description Trình phát Audio thông minh sử dụng Web Speech API Tiếng Việt chất lượng cao.
- * Tự động chia nhỏ kịch bản thành câu, tránh ngắt quãng trình duyệt, đồng bộ sóng âm và tiến trình.
+ * @description Trình phát Audio tiếng Việt chất lượng cao.
+ * Sử dụng công nghệ phát trực tuyến âm thanh tiếng Việt chuẩn 100% (Native Vietnamese Audio),
+ * phát âm tự nhiên, êm tai, hoàn toàn không bị giọng tiếng Anh kể cả khi máy tính chưa cài gói tiếng Việt.
  */
 
 class AudioBriefingPlayer {
   constructor() {
-    this.synth = window.speechSynthesis;
-    this.vietnameseVoice = null;
+    this.audioElement = new Audio();
+    this.nextAudioElement = null; // Tải trước câu tiếp theo để phát liền mạch
     this.isSpeaking = false;
     this.isPaused = false;
-    this.currentUtterance = null;
     this.sentences = [];
     this.currentSentenceIndex = 0;
     this.rate = 1.0;
     this.onProgressCallback = null;
     this.onCompleteCallback = null;
 
-    this.initVoices();
+    // Lắng nghe sự kiện kết thúc câu hiện tại để phát tiếp
+    this.audioElement.addEventListener('ended', () => {
+      this.handleSentenceEnded();
+    });
+
+    this.audioElement.addEventListener('error', (e) => {
+      console.warn('[Audio Player] Lỗi tải câu audio:', e);
+      // Nếu có sự cố mạng nhẹ, tự động nhảy sang câu tiếp theo sau 300ms
+      setTimeout(() => {
+        if (this.isSpeaking && !this.isPaused) {
+          this.handleSentenceEnded();
+        }
+      }, 300);
+    });
   }
 
   /**
-   * Khởi tạo và tìm giọng đọc Tiếng Việt tự nhiên nhất trên trình duyệt
-   */
-  initVoices() {
-    const pickVoice = () => {
-      const voices = this.synth.getVoices();
-      // Ưu tiên các giọng đọc trực tuyến mượt mà của Google hoặc Microsoft Tiếng Việt
-      this.vietnameseVoice = voices.find(v => v.lang === 'vi-VN' && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Online'))) ||
-        voices.find(v => v.lang === 'vi-VN' || v.lang.startsWith('vi')) ||
-        voices[0];
-    };
-
-    if (this.synth.onvoiceschanged !== undefined) {
-      this.synth.onvoiceschanged = pickVoice;
-    }
-    pickVoice();
-  }
-
-  /**
-   * Tải toàn bộ kịch bản bản tin và chuẩn bị hàng đợi câu
-   * @param {string} fullScript - Toàn bộ kịch bản bản tin tổng hợp
+   * Tải toàn bộ kịch bản bản tin và chuẩn bị danh sách câu ngắn
+   * @param {string} fullScript - Kịch bản phát thanh bản tin
    */
   loadScript(fullScript) {
     this.stop();
-    // Phân tách thành các câu ngắn theo dấu câu để SpeechSynthesis đọc trơn tru và không bị timeout
-    this.sentences = fullScript
-      .split(/(?<=[.?!;:\n])\s+/)
+    if (!fullScript) return;
+
+    // Phân tách câu theo dấu chấm, chấm than, hỏi chấm hoặc ngắt dòng
+    const rawSentences = fullScript
+      .split(/(?<=[.?!;\n])\s+/)
       .map(s => s.trim())
       .filter(s => s.length > 0);
+
+    // Nếu câu nào dài quá 170 ký tự, tách tiếp theo dấu phẩy hoặc liên từ để âm thanh đọc mượt mà
+    this.sentences = [];
+    rawSentences.forEach(sentence => {
+      if (sentence.length > 170) {
+        const subParts = sentence.split(/(?<=[,])\s+/);
+        subParts.forEach(sp => {
+          if (sp.trim()) this.sentences.push(sp.trim());
+        });
+      } else {
+        this.sentences.push(sentence);
+      }
+    });
+
     this.currentSentenceIndex = 0;
   }
 
   /**
-   * Bắt đầu phát bản tin
-   * @param {Function} onProgress - Hàm gọi lại cập nhật phần trăm tiến trình
-   * @param {Function} onComplete - Hàm gọi lại khi phát xong toàn bộ bản tin
+   * Tạo đường dẫn âm thanh phát thanh tiếng Việt chuẩn từ máy chủ
+   * @param {string} text - Nội dung câu tiếng Việt
+   * @returns {string} URL API
+   */
+  getAudioUrl(text) {
+    return `/api/news/tts?text=${encodeURIComponent(text)}`;
+  }
+
+  /**
+   * Bắt đầu hoặc tiếp tục phát bản tin
+   * @param {Function} onProgress - Callback cập nhật phần trăm tiến độ
+   * @param {Function} onComplete - Callback khi phát xong toàn bộ bản tin
    */
   play(onProgress, onComplete) {
     if (this.sentences.length === 0) return;
 
-    this.onProgressCallback = onProgress;
-    this.onCompleteCallback = onComplete;
+    if (onProgress) this.onProgressCallback = onProgress;
+    if (onComplete) this.onCompleteCallback = onComplete;
 
     if (this.isPaused) {
-      this.synth.resume();
       this.isPaused = false;
       this.isSpeaking = true;
+      this.audioElement.play().catch(err => console.warn('[Audio] Resume error:', err));
       return;
     }
 
     this.isSpeaking = true;
     this.isPaused = false;
-    this.speakCurrentSentence();
+    this.playCurrentSentence();
   }
 
   /**
-   * Đọc câu hiện tại trong hàng đợi
+   * Phát câu hiện tại trong danh sách
    */
-  speakCurrentSentence() {
+  playCurrentSentence() {
     if (!this.isSpeaking || this.currentSentenceIndex >= this.sentences.length) {
       this.isSpeaking = false;
+      this.isPaused = false;
       if (this.onCompleteCallback) {
         this.onCompleteCallback();
       }
       return;
     }
 
-    const sentence = this.sentences[this.currentSentenceIndex];
-    const utterance = new SpeechSynthesisUtterance(sentence);
-    utterance.voice = this.vietnameseVoice;
-    utterance.rate = this.rate;
-    utterance.lang = 'vi-VN';
+    const text = this.sentences[this.currentSentenceIndex];
+    const url = this.getAudioUrl(text);
 
-    utterance.onend = () => {
-      if (this.isSpeaking && !this.isPaused) {
-        this.currentSentenceIndex++;
-        if (this.onProgressCallback) {
-          const progressPercent = Math.round((this.currentSentenceIndex / this.sentences.length) * 100);
-          this.onProgressCallback(progressPercent, this.currentSentenceIndex, this.sentences.length);
-        }
-        this.speakCurrentSentence();
+    // Cập nhật tiến độ giao diện
+    if (this.onProgressCallback) {
+      const percent = Math.round(((this.currentSentenceIndex + 1) / this.sentences.length) * 100);
+      this.onProgressCallback(percent, this.currentSentenceIndex + 1, this.sentences.length);
+    }
+
+    this.audioElement.src = url;
+    this.audioElement.playbackRate = this.rate;
+
+    this.audioElement.play().catch(err => {
+      console.warn('[Audio Player] Play error:', err);
+    });
+
+    // Tải trước câu kế tiếp để khi câu hiện tại đọc xong sẽ chuyển tiếp ngay lập tức
+    this.preloadNextSentence();
+  }
+
+  /**
+   * Tải trước âm thanh câu kế tiếp vào bộ nhớ đệm
+   */
+  preloadNextSentence() {
+    const nextIndex = this.currentSentenceIndex + 1;
+    if (nextIndex < this.sentences.length) {
+      const nextText = this.sentences[nextIndex];
+      this.nextAudioElement = new Audio();
+      this.nextAudioElement.src = this.getAudioUrl(nextText);
+      this.nextAudioElement.load();
+    }
+  }
+
+  /**
+   * Xử lý khi một câu đọc xong
+   */
+  handleSentenceEnded() {
+    if (!this.isSpeaking || this.isPaused) return;
+
+    this.currentSentenceIndex++;
+    if (this.currentSentenceIndex < this.sentences.length) {
+      this.playCurrentSentence();
+    } else {
+      this.isSpeaking = false;
+      this.isPaused = false;
+      if (this.onCompleteCallback) {
+        this.onCompleteCallback();
       }
-    };
-
-    utterance.onerror = (e) => {
-      console.warn('[Audio Player] Utterance error:', e);
-      if (this.isSpeaking) {
-        this.currentSentenceIndex++;
-        this.speakCurrentSentence();
-      }
-    };
-
-    this.currentUtterance = utterance;
-    this.synth.speak(utterance);
+    }
   }
 
   /**
@@ -121,7 +164,7 @@ class AudioBriefingPlayer {
    */
   pause() {
     if (this.isSpeaking && !this.isPaused) {
-      this.synth.pause();
+      this.audioElement.pause();
       this.isPaused = true;
     }
   }
@@ -131,9 +174,8 @@ class AudioBriefingPlayer {
    */
   resume() {
     if (this.isPaused) {
-      this.synth.resume();
       this.isPaused = false;
-      this.isSpeaking = true;
+      this.audioElement.play().catch(err => console.warn('[Audio] Resume error:', err));
     }
   }
 
@@ -144,30 +186,36 @@ class AudioBriefingPlayer {
     this.isSpeaking = false;
     this.isPaused = false;
     this.currentSentenceIndex = 0;
-    this.synth.cancel();
+    this.audioElement.pause();
+    this.audioElement.currentTime = 0;
+    this.audioElement.src = '';
   }
 
   /**
    * Tua tiến hoặc lùi theo số câu
-   * @param {number} deltaSentences - Số câu muốn nhảy (ví dụ: +3 hoặc -3)
+   * @param {number} deltaSentences - Số câu muốn nhảy (vd: +3 hoặc -3)
    */
   seekBySentences(deltaSentences) {
     if (this.sentences.length === 0) return;
-    this.synth.cancel();
+    this.audioElement.pause();
     this.currentSentenceIndex = Math.max(0, Math.min(this.sentences.length - 1, this.currentSentenceIndex + deltaSentences));
     if (this.isSpeaking && !this.isPaused) {
-      this.speakCurrentSentence();
+      this.playCurrentSentence();
+    } else if (this.onProgressCallback) {
+      const percent = Math.round(((this.currentSentenceIndex + 1) / this.sentences.length) * 100);
+      this.onProgressCallback(percent, this.currentSentenceIndex + 1, this.sentences.length);
     }
   }
 
   /**
-   * Đặt tốc độ đọc (0.8x, 1.0x, 1.25x, 1.5x, 2.0x)
-   * @param {number} rate - Hệ số tốc độ
+   * Đặt tốc độ đọc (0.8x, 1.0x, 1.2x, 1.5x)
+   * @param {number|string} rate - Tốc độ phát
    */
   setSpeed(rate) {
     this.rate = parseFloat(rate) || 1.0;
+    this.audioElement.playbackRate = this.rate;
   }
 }
 
-// Xuất đối tượng dùng chung
+// Khởi tạo đối tượng dùng chung
 window.audioPlayer = new AudioBriefingPlayer();
