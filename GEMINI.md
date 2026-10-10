@@ -137,4 +137,5 @@ TIN_TUC_2026/
     - `client/js/app.js`: Tương tác giao diện, chuyển tab chuyên mục, kích hoạt cào tin và thử nghiệm tình huống.
   * Viết bộ kiểm thử tự động `server/test.js` kiểm tra độ chính xác của bộ phát hiện diễn biến vụ cháy xe máy tại TP.HCM (kết quả đạt 100%).
   * Đã kích hoạt máy chủ chạy trên cổng `http://localhost:3000`.
+  * Đồng bộ nhánh với GitHub: Đổi tên nhánh sang `main`, rebase thành công với commit ban đầu trên GitHub (`origin/main`), giải quyết xung đột `README.md` giữ toàn bộ mã nguồn chuẩn.
 
