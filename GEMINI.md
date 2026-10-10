@@ -109,7 +109,7 @@ TIN_TUC_2026/
 - [x] **Bước 6:** Xây dựng Bộ biên tập kịch bản tổng hợp & Hệ thống Database/Storage lưu lịch sử theo User (User Cache & Milestones).
 - [x] **Bước 7:** Xây dựng Giao diện Frontend Web cao cấp (Glassmorphism, Dark Mode, Audio Studio Player có sóng âm Waveform, điều chỉnh tốc độ, nút mô phỏng tình huống diễn biến thực tế).
 - [x] **Bước 8:** Test toàn diện luồng: Cào tin -> Phân tích diễn biến -> Tổng hợp -> Đọc Audio -> Đánh dấu lịch sử (Tất cả test pass 100%).
-- [ ] **Bước 9:** Đẩy code lên GitHub repository `https://github.com/adwewecat/TIN_TUC_2026.git`.
+- [x] **Bước 9:** Đẩy code lên GitHub repository `https://github.com/adwewecat/TIN_TUC_2026.git`.
 
 ---
 
@@ -138,4 +138,5 @@ TIN_TUC_2026/
   * Viết bộ kiểm thử tự động `server/test.js` kiểm tra độ chính xác của bộ phát hiện diễn biến vụ cháy xe máy tại TP.HCM (kết quả đạt 100%).
   * Đã kích hoạt máy chủ chạy trên cổng `http://localhost:3000`.
   * Đồng bộ nhánh với GitHub: Đổi tên nhánh sang `main`, rebase thành công với commit ban đầu trên GitHub (`origin/main`), giải quyết xung đột `README.md` giữ toàn bộ mã nguồn chuẩn.
+  * Đã xác thực quyền và đẩy toàn bộ mã nguồn sạch lên nhánh `origin/main` thành công.
 
