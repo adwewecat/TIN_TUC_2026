@@ -21,7 +21,7 @@ const router = express.Router();
 router.get('/', (req, res) => {
   try {
     const allNews = getAllNews();
-    const userId = req.query.userId || 'default_user';
+    const userId = req.query.userId || 'dung.nguyenanh';
     const userHistory = getUserHistory(userId);
     const listenedSet = new Set(userHistory.listenedNewsIds || []);
 
@@ -46,7 +46,7 @@ router.get('/', (req, res) => {
  */
 router.post('/crawl', async (req, res) => {
   try {
-    const userId = req.body.userId || 'default_user';
+    const userId = req.body.userId || 'dung.nguyenanh';
     console.log(`[Crawl Engine] Bắt đầu cào dữ liệu cho user: ${userId}...`);
 
     // 1. Cào song song các nguồn dữ liệu chính
@@ -96,7 +96,7 @@ router.post('/crawl', async (req, res) => {
  */
 router.get('/briefing', (req, res) => {
   try {
-    const userId = req.query.userId || 'default_user';
+    const userId = req.query.userId || 'dung.nguyenanh';
     const userHistory = getUserHistory(userId);
     const listenedSet = new Set(userHistory.listenedNewsIds || []);
 

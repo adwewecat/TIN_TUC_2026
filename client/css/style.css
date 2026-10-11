@@ -139,20 +139,63 @@ body {
   gap: 0.75rem;
 }
 
-.user-badge {
+.user-account-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-color);
-  padding: 0.4rem 0.85rem;
+  padding: 0.35rem 0.85rem;
   border-radius: var(--radius-full);
   font-size: 0.85rem;
-  color: var(--text-muted);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: var(--blur-glass);
 }
 
-.user-badge strong {
-  color: var(--text-main);
+.user-account-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(96, 165, 250, 0.5);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.25);
+  transform: translateY(-1px);
+}
+
+.user-avatar-badge {
+  font-size: 1.1rem;
+}
+
+.user-info-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  line-height: 1.15;
+}
+
+.user-role-label {
+  font-size: 0.65rem;
+  color: #93c5fd;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.user-name-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.user-dropdown-arrow {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-left: 0.2rem;
+  transition: transform 0.2s ease;
+}
+
+.user-account-btn:hover .user-dropdown-arrow {
+  color: #60a5fa;
+  transform: translateY(1px);
 }
 
 /* Nút bấm giao diện */
@@ -703,6 +746,177 @@ body {
   color: var(--text-muted);
   font-size: 1.5rem;
   cursor: pointer;
+}
+
+/* User Auth Modal Styles */
+.auth-modal-content {
+  max-width: 500px;
+}
+
+.section-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.quick-users-section {
+  margin-bottom: 1.25rem;
+}
+
+.quick-user-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.quick-user-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-user-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(96, 165, 250, 0.5);
+  transform: translateX(2px);
+}
+
+.quick-user-card.active {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.12);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
+}
+
+.card-user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.card-user-avatar.admin-avatar {
+  background: rgba(245, 158, 11, 0.18);
+}
+
+.card-user-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  text-align: left;
+}
+
+.card-user-details strong {
+  font-size: 0.95rem;
+  color: #f1f5f9;
+}
+
+.card-user-details span {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.card-user-details code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  color: #93c5fd;
+  font-family: inherit;
+}
+
+.btn-select-user {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  border-radius: var(--radius-full);
+}
+
+.quick-user-card.active .btn-select-user {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.form-divider {
+  position: relative;
+  text-align: center;
+  margin: 1.25rem 0 1.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.form-divider span {
+  position: relative;
+  top: 9px;
+  background: var(--bg-secondary);
+  padding: 0 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.manual-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: left;
+}
+
+.form-group label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.form-input {
+  background: rgba(11, 15, 25, 0.6);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.85rem;
+  color: #f1f5f9;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+.current-session-bar {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
 }
 
 /* Toast Notifications */

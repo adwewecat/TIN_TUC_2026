@@ -141,8 +141,23 @@ TIN_TUC_2026/
   * Đã xác thực quyền và đẩy toàn bộ mã nguồn sạch lên nhánh `origin/main` thành công.
   * Bổ sung script Windows tiện ích:
     - `CHAY_WEB.bat`: Double-click là tự động kiểm tra môi trường, mở trình duyệt `http://localhost:3000` và khởi chạy server.
-    - `TEST_LOGIC.bat`: Double-click là chạy bộ test tự động và hiển thị kết quả trực tiếp.
   * Nâng cấp bộ đọc Audio Tiếng Việt Chuẩn 100% (Native Vietnamese Audio Engine):
     - Tích hợp endpoint `/api/news/tts` phát âm thanh tiếng Việt tự nhiên, êm tai.
     - Thay thế Web Speech API nội bộ Windows (vốn bị lỗi đọc giọng tiếng Anh trên các máy chưa cài gói ngôn ngữ tiếng Việt) bằng pipeline HTML5 Audio tải trước và phát liền mạch.
+* **2026-10-11:**
+  * Bổ sung hệ thống quản lý tài khoản người dùng và xác thực đăng nhập:
+    - Khởi tạo 2 tài khoản mặc định theo yêu cầu:
+      1. `dung.nguyenanh` - Mật khẩu: `1` (Người dùng chính)
+      2. `admin` - Mật khẩu: `1` (Quản trị viên)
+    - Lưu trữ danh sách tài khoản bền vững trong `server/storage/data/users.json`.
+    - API endpoint: `POST /api/user/login` (xác thực đăng nhập), `GET /api/user/list` (danh sách user).
+  * Phân tách độc lập lịch sử tin đã nghe theo từng tài khoản (User-scoped History & Cache):
+    - Dữ liệu `listenedNewsIds` và `listenedBatches` được lưu tách biệt 100% giữa `dung.nguyenanh` và `admin` trong `user_history.json`.
+    - Bài viết được người này nghe sẽ không bị ảnh hưởng đến người kia.
+    - Tự động gắn mốc đã nghe khi hoàn thành nghe 1 bài viết hoặc toàn bộ bản tin tổng hợp.
+  * Thiết kế giao diện chuyển đổi tài khoản 1-chạm (User Account Switcher UI):
+    - Nút bấm tài khoản trên Header hiển thị icon avatar, role badge, tên tài khoản hiện tại.
+    - Modal quản lý tài khoản đẹp mắt với 2 thẻ chuyển đổi nhanh cho `dung.nguyenanh` và `admin`, kèm form đăng nhập thủ công.
+  * Bổ sung Test tự động `[TEST 4]` trong `server/test.js` kiểm tra xác thực người dùng và tính độc lập của lịch sử nghe (đạt 100%).
+
 

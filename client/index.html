@@ -33,10 +33,15 @@
       </a>
 
       <div class="header-actions">
-        <div class="user-badge" id="current-user-badge">
-          <span>👤 ID:</span>
-          <strong id="user-id-display">user_default</strong>
-        </div>
+        <!-- Nút bấm đổi tài khoản / đăng nhập với 2 user mặc định dung.nguyenanh & admin -->
+        <button class="user-account-btn" id="btn-user-account" aria-label="Đổi tài khoản hoặc đăng nhập" title="Click để chuyển đổi giữa dung.nguyenanh và admin">
+          <span class="user-avatar-badge" id="user-avatar-display">👤</span>
+          <div class="user-info-text">
+            <span class="user-role-label" id="user-role-display">Người dùng</span>
+            <strong class="user-name-label" id="user-id-display">dung.nguyenanh</strong>
+          </div>
+          <span class="user-dropdown-arrow">▼</span>
+        </button>
 
         <button class="btn btn-outline" id="btn-view-history" aria-label="Xem lịch sử đã nghe">
           📊 Lịch sử nghe
@@ -168,11 +173,84 @@
     </section>
   </main>
 
+  <!-- Modal Đăng Nhập & Chuyển Đổi Người Dùng -->
+  <div class="modal-backdrop" id="user-auth-modal" aria-hidden="true" role="dialog">
+    <div class="modal-content auth-modal-content">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span style="font-size: 1.5rem;">👥</span>
+          <div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Quản Lý & Đổi Tài Khoản</h3>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0.2rem 0 0 0;">Lưu trữ và phân tách lịch sử tin đã nghe theo từng người dùng</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="btn-close-auth-modal" aria-label="Đóng cửa sổ">✕</button>
+      </div>
+
+      <!-- Khung Chọn Nhanh 2 Tài Khoản Mặc Định -->
+      <div class="quick-users-section">
+        <label class="section-label">⚡ Chọn nhanh tài khoản mặc định (Bấm 1 chạm để đổi):</label>
+        <div class="quick-user-grid">
+          <!-- Card 1: dung.nguyenanh -->
+          <div class="quick-user-card active" id="quick-user-dung" data-username="dung.nguyenanh" data-password="1">
+            <div class="card-user-avatar">👤</div>
+            <div class="card-user-details">
+              <strong>dung.nguyenanh</strong>
+              <span>Mật khẩu: <code>1</code> &bull; Người dùng chính</span>
+            </div>
+            <button type="button" class="btn btn-sm btn-select-user">Chọn</button>
+          </div>
+
+          <!-- Card 2: admin -->
+          <div class="quick-user-card" id="quick-user-admin" data-username="admin" data-password="1">
+            <div class="card-user-avatar admin-avatar">🛡️</div>
+            <div class="card-user-details">
+              <strong>admin</strong>
+              <span>Mật khẩu: <code>1</code> &bull; Quản trị viên</span>
+            </div>
+            <button type="button" class="btn btn-sm btn-select-user">Chọn</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Đăng Nhập Thủ Công -->
+      <form id="form-user-login" class="manual-login-form">
+        <div class="form-divider">
+          <span>hoặc đăng nhập thủ công</span>
+        </div>
+
+        <div class="form-group">
+          <label for="input-login-username">Tên đăng nhập:</label>
+          <input type="text" id="input-login-username" class="form-input" placeholder="dung.nguyenanh hoặc admin" required autocomplete="username" />
+        </div>
+
+        <div class="form-group">
+          <label for="input-login-password">Mật khẩu:</label>
+          <input type="password" id="input-login-password" class="form-input" placeholder="Nhập mật khẩu (mặc định: 1)" required autocomplete="current-password" />
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+          <button type="submit" class="btn btn-primary" style="flex: 1;" id="btn-submit-login">
+            🚀 Đăng nhập ngay
+          </button>
+        </div>
+      </form>
+
+      <!-- Thanh Trạng Thái Phiên Hiện Tại -->
+      <div class="current-session-bar">
+        <span>Đang đăng nhập: <strong id="auth-current-username" style="color: #60a5fa;">dung.nguyenanh</strong> (<span id="auth-current-role">Người dùng</span>)</span>
+        <span id="auth-current-stats" style="color: var(--text-muted); font-size: 0.8rem;">0 tin đã nghe</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal Quản Lý Lịch Sử Nghe & Cache User -->
   <div class="modal-backdrop" id="history-modal" aria-hidden="true" role="dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 style="font-size: 1.25rem; font-weight: 700;">📊 Lịch Sử Nghe & Cột Mốc Lưu Trữ</h3>
+        <h3 style="font-size: 1.25rem; font-weight: 700;">
+          📊 Lịch Sử Nghe (<span id="modal-user-name" style="color: #60a5fa;">dung.nguyenanh</span>)
+        </h3>
         <button class="modal-close-btn" id="btn-close-modal" aria-label="Đóng cửa sổ">✕</button>
       </div>
       <div style="margin-bottom: 1.25rem;">
@@ -192,7 +270,7 @@
         <button class="btn btn-outline" id="btn-reset-history-confirm" style="color: #f87171; border-color: rgba(239, 68, 68, 0.3);">
           🗑️ Đặt lại lịch sử nghe
         </button>
-        <span style="font-size: 0.75rem; color: var(--text-muted);">Dữ liệu lưu tự động theo User</span>
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Dữ liệu lưu độc lập theo User</span>
       </div>
     </div>
   </div>

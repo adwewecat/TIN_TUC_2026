@@ -29,8 +29,12 @@ Hệ thống thu thập, phân tích, đúc kết tin tức trong nước trong 
    * Điều khiển trình phát tiện lợi: Tạm dừng, tiếp tục, tua tiến/lùi, chỉnh tốc độ đọc, hiển thị tiến trình từng phần tin.
 
 5. **Lưu Lịch Sử & Quản Lý Cache Theo Người Dùng (User-based History):**
-   * Quản lý trạng thái theo `userId`.
-   * Ghi nhận các bài viết đã nghe, các đợt phát đã hoàn thành để làm mốc cho các lần quét tiếp theo.
+   * Hỗ trợ xác thực và phân tách trạng thái nghe theo từng tài khoản riêng biệt.
+   * Cung cấp sẵn **2 tài khoản mặc định**:
+     - 👤 **`dung.nguyenanh`** (Mật khẩu: `1`) - Người dùng chính
+     - 🛡️ **`admin`** (Mật khẩu: `1`) - Quản trị viên
+   * Giao diện chọn nhanh 1-chạm hoặc đăng nhập linh hoạt.
+   * Tin tức đã nghe bởi `dung.nguyenanh` sẽ không làm mất tin của `admin`, mỗi người có danh sách mốc tin đã nghe hoàn toàn độc lập.
 
 ---
 

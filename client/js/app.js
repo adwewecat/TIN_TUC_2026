@@ -17,11 +17,53 @@ document.addEventListener('DOMContentLoaded', () => {
  * Khởi tạo các sự kiện giao diện và gán lắng nghe
  */
 function initUI() {
-  // Hiển thị mã người dùng hiện tại
-  const userDisplay = document.getElementById('user-id-display');
-  if (userDisplay) {
-    userDisplay.innerText = window.historyManager.userId;
+  // Cập nhật thông tin hiển thị tài khoản người dùng
+  updateUserHeaderDisplay();
+
+  // Nút bấm mở Modal quản lý tài khoản & chuyển đổi user
+  const btnUserAccount = document.getElementById('btn-user-account');
+  if (btnUserAccount) {
+    btnUserAccount.addEventListener('click', openUserAuthModal);
   }
+
+  // Nút đóng Modal quản lý tài khoản
+  const btnCloseAuthModal = document.getElementById('btn-close-auth-modal');
+  if (btnCloseAuthModal) {
+    btnCloseAuthModal.addEventListener('click', closeUserAuthModal);
+  }
+
+  // Chọn nhanh tài khoản mặc định dung.nguyenanh
+  const cardDung = document.getElementById('quick-user-dung');
+  if (cardDung) {
+    cardDung.addEventListener('click', () => switchAndLogin('dung.nguyenanh', '1'));
+  }
+
+  // Chọn nhanh tài khoản mặc định admin
+  const cardAdmin = document.getElementById('quick-user-admin');
+  if (cardAdmin) {
+    cardAdmin.addEventListener('click', () => switchAndLogin('admin', '1'));
+  }
+
+  // Lắng nghe submit form đăng nhập thủ công
+  const formLogin = document.getElementById('form-user-login');
+  if (formLogin) {
+    formLogin.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const uInput = document.getElementById('input-login-username');
+      const pInput = document.getElementById('input-login-password');
+      if (uInput && pInput) {
+        await switchAndLogin(uInput.value.trim(), pInput.value);
+      }
+    });
+  }
+
+  // Đóng modal khi bấm ra vùng backdrop ngoài
+  window.addEventListener('click', (e) => {
+    const authModal = document.getElementById('user-auth-modal');
+    if (e.target === authModal) closeUserAuthModal();
+    const historyModal = document.getElementById('history-modal');
+    if (e.target === historyModal) closeHistoryModal();
+  });
 
   // Nút Phát / Tạm dừng bản tin lớn
   const btnPlayMain = document.getElementById('btn-play-briefing');
@@ -286,7 +328,7 @@ function renderNewsGrid() {
 }
 
 /**
- * Đọc riêng một bài viết cụ thể
+ * Đọc riêng một bài viết cụ thể và tự động lưu mốc đã nghe cho tài khoản hiện tại
  * @param {string} articleId - Mã bài viết
  */
 window.speakSingleArticle = function(articleId) {
@@ -304,9 +346,15 @@ window.speakSingleArticle = function(articleId) {
 
   window.audioPlayer.play(
     null,
-    () => {
+    async () => {
       updatePlayerUIState(false);
-      showToast('Đã đọc xong tin tức!', 'success');
+      showToast('Đã đọc xong tin tức! Đang lưu vào lịch sử tài khoản...', 'success');
+
+      // Tự động lưu mốc đã nghe cho tài khoản người dùng hiện tại
+      await window.historyManager.saveMilestone([article.id], null, article.title);
+
+      // Cập nhật lại giao diện để hiển thị huy hiệu "✓ Đã nghe"
+      await loadData();
     }
   );
 };
@@ -366,14 +414,102 @@ async function triggerMockScenario() {
 }
 
 /**
+ * Mở modal quản lý tài khoản & chuyển đổi user
+ */
+async function openUserAuthModal() {
+  const modal = document.getElementById('user-auth-modal');
+  if (modal) modal.classList.add('active');
+
+  updateUserHeaderDisplay();
+
+  // Cập nhật số tin đã nghe của user hiện tại trong modal
+  const statsEl = document.getElementById('auth-current-stats');
+  if (statsEl) {
+    const history = await window.historyManager.fetchHistory();
+    const count = history && history.listenedNewsIds ? history.listenedNewsIds.length : 0;
+    statsEl.innerText = `${count} tin đã nghe`;
+  }
+}
+
+/**
+ * Đóng modal quản lý tài khoản
+ */
+function closeUserAuthModal() {
+  const modal = document.getElementById('user-auth-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+/**
+ * Đăng nhập hoặc chuyển đổi sang người dùng khác
+ * @param {string} username - Tên đăng nhập
+ * @param {string} password - Mật khẩu
+ */
+async function switchAndLogin(username, password) {
+  showToast(`Đang đăng nhập vào tài khoản ${username}...`, 'info');
+  const res = await window.historyManager.login(username, password);
+
+  if (res.success) {
+    showToast(`🎉 Đã đăng nhập thành công: ${res.user.username}!`, 'success');
+    updateUserHeaderDisplay();
+    closeUserAuthModal();
+
+    // Dừng âm thanh nếu đang phát dở của user cũ
+    window.audioPlayer.stop();
+    updatePlayerUIState(false);
+
+    // Tải lại toàn bộ dữ liệu tin tức và kịch bản phát thanh riêng cho user mới này
+    await loadData();
+  } else {
+    showToast(`❌ ${res.message}`, 'error');
+  }
+}
+
+/**
+ * Cập nhật thông tin tài khoản hiển thị trên thanh Header và Modal
+ */
+function updateUserHeaderDisplay() {
+  const user = window.historyManager.currentUser;
+  const username = user.username || user.id;
+  const isAdmin = user.role === 'admin' || username === 'admin';
+
+  const userDisplay = document.getElementById('user-id-display');
+  const avatarDisplay = document.getElementById('user-avatar-display');
+  const roleDisplay = document.getElementById('user-role-display');
+
+  if (userDisplay) userDisplay.innerText = username;
+  if (avatarDisplay) avatarDisplay.innerText = isAdmin ? '🛡️' : '👤';
+  if (roleDisplay) roleDisplay.innerText = isAdmin ? 'Quản trị viên' : 'Người dùng';
+
+  // Modal display
+  const authUsername = document.getElementById('auth-current-username');
+  const authRole = document.getElementById('auth-current-role');
+  if (authUsername) authUsername.innerText = username;
+  if (authRole) authRole.innerText = isAdmin ? 'Quản trị viên' : 'Người dùng';
+
+  // Đánh dấu active trong card chọn nhanh
+  const cardDung = document.getElementById('quick-user-dung');
+  const cardAdmin = document.getElementById('quick-user-admin');
+  if (cardDung) {
+    if (username === 'dung.nguyenanh') cardDung.classList.add('active');
+    else cardDung.classList.remove('active');
+  }
+  if (cardAdmin) {
+    if (username === 'admin') cardAdmin.classList.add('active');
+    else cardAdmin.classList.remove('active');
+  }
+}
+
+/**
  * Mở modal lịch sử nghe
  */
 async function openHistoryModal() {
   const modal = document.getElementById('history-modal');
   const listContainer = document.getElementById('modal-history-list');
   const countSpan = document.getElementById('modal-read-count');
+  const userSpan = document.getElementById('modal-user-name');
 
   if (modal) modal.classList.add('active');
+  if (userSpan) userSpan.innerText = window.historyManager.userId;
 
   const history = await window.historyManager.fetchHistory();
   if (history && listContainer) {
@@ -393,7 +529,7 @@ async function openHistoryModal() {
         </div>
       `).join('');
     } else {
-      listContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem;">Chưa có phiên nghe nào được hoàn thành.</p>`;
+      listContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem;">Tài khoản này chưa có phiên nghe trọn vẹn nào được hoàn thành.</p>`;
     }
   }
 }
@@ -410,10 +546,11 @@ function closeHistoryModal() {
  * Đặt lại lịch sử nghe
  */
 async function handleResetHistory() {
-  if (confirm('Bạn có chắc chắn muốn đặt lại toàn bộ lịch sử nghe của tài khoản này?')) {
+  const username = window.historyManager.userId;
+  if (confirm(`Bạn có chắc chắn muốn đặt lại toàn bộ lịch sử nghe của tài khoản "${username}"?`)) {
     await window.historyManager.resetHistory();
     closeHistoryModal();
-    showToast('Đã đặt lại lịch sử nghe thành công!', 'success');
+    showToast(`Đã đặt lại lịch sử nghe của "${username}" thành công!`, 'success');
     await loadData();
   }
 }

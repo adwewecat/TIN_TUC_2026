@@ -16,6 +16,27 @@ const __dirname = path.dirname(__filename);
 const DATA_DIR = path.join(__dirname, 'data');
 const NEWS_FILE = path.join(DATA_DIR, 'news_db.json');
 const USER_HISTORY_FILE = path.join(DATA_DIR, 'user_history.json');
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
+
+// Danh sách tài khoản người dùng mặc định theo yêu cầu của hệ thống
+const DEFAULT_USERS = [
+  {
+    id: 'dung.nguyenanh',
+    username: 'dung.nguyenanh',
+    password: '1',
+    displayName: 'dung.nguyenanh',
+    role: 'user',
+    createdAt: '2026-10-11T00:00:00.000Z'
+  },
+  {
+    id: 'admin',
+    username: 'admin',
+    password: '1',
+    displayName: 'admin',
+    role: 'admin',
+    createdAt: '2026-10-11T00:00:00.000Z'
+  }
+];
 
 // Đảm bảo thư mục lưu trữ luôn tồn tại
 if (!fs.existsSync(DATA_DIR)) {
@@ -101,15 +122,87 @@ export function getNewsById(id) {
 }
 
 /**
+ * Lấy danh sách tất cả người dùng trong hệ thống.
+ * Tự động đồng bộ và khởi tạo 2 tài khoản mặc định (dung.nguyenanh / 1 và admin / 1) nếu chưa có.
+ * @returns {Array<Object>} Danh sách tài khoản người dùng
+ */
+export function getUsers() {
+  let users = readJSON(USERS_FILE, []);
+  let modified = false;
+
+  for (const defUser of DEFAULT_USERS) {
+    const existingIndex = users.findIndex(u => u.username.toLowerCase() === defUser.username.toLowerCase());
+    if (existingIndex === -1) {
+      users.push({ ...defUser });
+      modified = true;
+    }
+  }
+
+  if (modified || !fs.existsSync(USERS_FILE)) {
+    writeJSON(USERS_FILE, users);
+  }
+  return users;
+}
+
+/**
+ * Tìm người dùng theo tên đăng nhập (không phân biệt chữ hoa, chữ thường)
+ * @param {string} username - Tên đăng nhập
+ * @returns {Object|null} Thông tin người dùng hoặc null
+ */
+export function findUser(username) {
+  if (!username) return null;
+  const users = getUsers();
+  return users.find(u => u.username.toLowerCase() === username.trim().toLowerCase()) || null;
+}
+
+/**
+ * Xác thực đăng nhập người dùng với mật khẩu
+ * @param {string} username - Tên đăng nhập
+ * @param {string} password - Mật khẩu
+ * @returns {Object|null} Thông tin người dùng an toàn (đã loại bỏ password) hoặc null nếu không khớp
+ */
+export function authenticateUser(username, password) {
+  const user = findUser(username);
+  if (!user) return null;
+
+  if (String(user.password) === String(password)) {
+    const { password: _, ...safeUser } = user;
+    return safeUser;
+  }
+  return null;
+}
+
+/**
+ * Lấy thông tin an toàn của người dùng theo mã định danh userId
+ * @param {string} userId - Mã người dùng (vd: dung.nguyenanh, admin)
+ * @returns {Object} Hồ sơ người dùng
+ */
+export function getUserById(userId) {
+  const users = getUsers();
+  const user = users.find(u => u.id === userId || u.username.toLowerCase() === (userId || '').toLowerCase());
+  if (user) {
+    const { password: _, ...safeUser } = user;
+    return safeUser;
+  }
+  return {
+    id: userId,
+    username: userId,
+    displayName: userId,
+    role: 'user'
+  };
+}
+
+/**
  * Lấy lịch sử và trạng thái đã nghe của người dùng cụ thể
- * @param {string} userId - Mã định danh người dùng (ví dụ: 'user_default' hoặc uuid)
+ * @param {string} userId - Mã định danh người dùng (mặc định: 'dung.nguyenanh')
  * @returns {Object} Thông tin lịch sử nghe của user
  */
-export function getUserHistory(userId = 'default_user') {
+export function getUserHistory(userId = 'dung.nguyenanh') {
+  const effectiveId = userId || 'dung.nguyenanh';
   const allHistory = readJSON(USER_HISTORY_FILE, {});
-  if (!allHistory[userId]) {
-    allHistory[userId] = {
-      userId,
+  if (!allHistory[effectiveId]) {
+    allHistory[effectiveId] = {
+      userId: effectiveId,
       listenedNewsIds: [],
       listenedBatches: [],
       lastMilestone: null,
@@ -117,7 +210,7 @@ export function getUserHistory(userId = 'default_user') {
     };
     writeJSON(USER_HISTORY_FILE, allHistory);
   }
-  return allHistory[userId];
+  return allHistory[effectiveId];
 }
 
 /**
@@ -126,10 +219,11 @@ export function getUserHistory(userId = 'default_user') {
  * @param {Array<string>} newsIds - Mảng các ID bài viết đã nghe
  * @returns {Object} Lịch sử user đã cập nhật
  */
-export function markNewsAsRead(userId = 'default_user', newsIds = []) {
+export function markNewsAsRead(userId = 'dung.nguyenanh', newsIds = []) {
+  const effectiveId = userId || 'dung.nguyenanh';
   const allHistory = readJSON(USER_HISTORY_FILE, {});
-  const userRecord = allHistory[userId] || {
-    userId,
+  const userRecord = allHistory[effectiveId] || {
+    userId: effectiveId,
     listenedNewsIds: [],
     listenedBatches: [],
     lastMilestone: null
@@ -142,7 +236,7 @@ export function markNewsAsRead(userId = 'default_user', newsIds = []) {
   userRecord.lastMilestone = new Date().toISOString();
   userRecord.updatedAt = new Date().toISOString();
 
-  allHistory[userId] = userRecord;
+  allHistory[effectiveId] = userRecord;
   writeJSON(USER_HISTORY_FILE, allHistory);
   return userRecord;
 }
@@ -152,10 +246,11 @@ export function markNewsAsRead(userId = 'default_user', newsIds = []) {
  * @param {string} userId - Mã người dùng
  * @param {Object} batchData - Dữ liệu phiên nghe (batchId, newsCount, summary)
  */
-export function saveListenedBatch(userId = 'default_user', batchData = {}) {
+export function saveListenedBatch(userId = 'dung.nguyenanh', batchData = {}) {
+  const effectiveId = userId || 'dung.nguyenanh';
   const allHistory = readJSON(USER_HISTORY_FILE, {});
-  const userRecord = allHistory[userId] || {
-    userId,
+  const userRecord = allHistory[effectiveId] || {
+    userId: effectiveId,
     listenedNewsIds: [],
     listenedBatches: [],
     lastMilestone: null
@@ -172,7 +267,7 @@ export function saveListenedBatch(userId = 'default_user', batchData = {}) {
     userRecord.listenedBatches = userRecord.listenedBatches.slice(0, 50);
   }
 
-  allHistory[userId] = userRecord;
+  allHistory[effectiveId] = userRecord;
   writeJSON(USER_HISTORY_FILE, allHistory);
 }
 
@@ -181,15 +276,17 @@ export function saveListenedBatch(userId = 'default_user', batchData = {}) {
  * @param {string} userId - Mã người dùng
  * @returns {Object} Hồ sơ người dùng sau khi reset
  */
-export function resetUserHistory(userId = 'default_user') {
+export function resetUserHistory(userId = 'dung.nguyenanh') {
+  const effectiveId = userId || 'dung.nguyenanh';
   const allHistory = readJSON(USER_HISTORY_FILE, {});
-  allHistory[userId] = {
-    userId,
+  allHistory[effectiveId] = {
+    userId: effectiveId,
     listenedNewsIds: [],
     listenedBatches: [],
     lastMilestone: null,
     updatedAt: new Date().toISOString()
   };
   writeJSON(USER_HISTORY_FILE, allHistory);
-  return allHistory[userId];
+  return allHistory[effectiveId];
 }
+

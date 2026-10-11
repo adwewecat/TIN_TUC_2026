@@ -76,6 +76,50 @@ async function runTests() {
   const briefing = generateDailyBriefing(analyzed);
   console.log(`✓ Tổng số chuyên mục trong bản tin: ${briefing.sections.length}`);
   console.log(`✓ Đoạn mở đầu bản tin:\n"${briefing.openingScript}"`);
+
+  console.log('\n--- [TEST 4] Kiểm tra Quản lý User mặc định & Phân tách lịch sử nghe theo từng tài khoản ---');
+  const { getUsers, authenticateUser, markNewsAsRead, getUserHistory } = await import('./storage/database.js');
+  const users = getUsers();
+  console.log(`✓ Danh sách người dùng trong hệ thống: ${users.map(u => u.username).join(', ')}`);
+
+  const userDung = authenticateUser('dung.nguyenanh', '1');
+  const userAdmin = authenticateUser('admin', '1');
+  const invalidAuth = authenticateUser('dung.nguyenanh', 'sai_mat_khau');
+
+  if (userDung && userDung.username === 'dung.nguyenanh') {
+    console.log('✅ THÀNH CÔNG: Xác thực tài khoản "dung.nguyenanh" (pass: 1) chuẩn xác!');
+  } else {
+    throw new Error('Thất bại khi xác thực tài khoản dung.nguyenanh');
+  }
+
+  if (userAdmin && userAdmin.username === 'admin' && userAdmin.role === 'admin') {
+    console.log('✅ THÀNH CÔNG: Xác thực tài khoản "admin" (pass: 1) chuẩn xác!');
+  } else {
+    throw new Error('Thất bại khi xác thực tài khoản admin');
+  }
+
+  if (!invalidAuth) {
+    console.log('✅ THÀNH CÔNG: Hệ thống từ chối đăng nhập với mật khẩu không đúng chuẩn xác!');
+  } else {
+    throw new Error('Bảo mật lỗi: Cho phép đăng nhập mật khẩu sai');
+  }
+
+  // Kiểm tra lưu lịch sử độc lập
+  const testArticleId = 'test_article_' + Date.now();
+  markNewsAsRead('dung.nguyenanh', [testArticleId]);
+
+  const dungHist = getUserHistory('dung.nguyenanh');
+  const adminHist = getUserHistory('admin');
+
+  const dungHasRead = (dungHist.listenedNewsIds || []).includes(testArticleId);
+  const adminHasRead = (adminHist.listenedNewsIds || []).includes(testArticleId);
+
+  if (dungHasRead && !adminHasRead) {
+    console.log('✅ THÀNH CÔNG: Tin đã nghe được lưu trữ độc lập theo User (dung.nguyenanh đã nghe, admin chưa nghe)!');
+  } else {
+    throw new Error('Lịch sử tin nghe bị trùng lặp giữa các tài khoản người dùng!');
+  }
+
   console.log('\n========================================');
   console.log('🎉 TẤT CẢ CÁC BÀI TEST ĐỀU ĐẠT CHUẨN 100%!');
   console.log('========================================');
